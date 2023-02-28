@@ -6,6 +6,7 @@ import time
 HOST = "127.0.0.1"
 PORT = 65432
 key=None
+nickname=None
 connected_flag=False
 
 def initial_connection(client_socket):
@@ -15,11 +16,12 @@ def initial_connection(client_socket):
     connected_flag = not connected_flag
 
 def sender(client_socket):
+    print("\n\nYour message: ")
     while True:
-        text = input("> ")
-        data = json.dumps({"text": text})
+        text=input()
+        data = json.dumps({"text": text, "nickname": nickname})
         client_socket.send(data.encode())
-        print("\033[A                             \033[A")
+        print('\x1b[1A\x1b[2K\x1b[1A')
         time.sleep(0.1)
 
 
@@ -32,13 +34,17 @@ def run():
         threading.Thread(target=sender, args=(s,)).start()
 
         while True:
-            data_recived = s.recv(1024)
-            if not data_recived:
+            data_received = s.recv(1024)
+            if not data_received:
                 break
-            data_recived = json.loads(data_recived)
+            data_received = json.loads(data_received)
 
-            print(f"< {data_recived['text']!r}")
+            print("\033[A                             \033[A")
+            print("\033[A                             \033[A")
+            print(f"{data_received['nickname']}: {data_received['text']}")
+            print("\nYour message: ")
 
 if __name__ == '__main__':
     key=input("Public key: ")
+    nickname=input("Enter your nickname: ")
     run()
