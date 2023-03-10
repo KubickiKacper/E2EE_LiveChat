@@ -1,15 +1,14 @@
 import threading
 import json
+import chanel
 
-active_clients=[]
 
 class Client(threading.Thread):
     def __init__(self, client_conn, client_addr):
         super(Client, self).__init__()
         self.client_conn=client_conn
         self.client_addr=client_addr
-        self.key=None
-        active_clients.append(self)
+        self.client_chanel=None
 
     def run(self):
         while True:
@@ -20,24 +19,36 @@ class Client(threading.Thread):
 
             try:
                 if data["text"]:
-                    print(data["text"])
+                    print(data)
+                    clients = self.client_chanel.users
                     data=json.dumps(data)
-                    clients=self.find_same_key_clients()
-                    print("clients: ")
-                    print(active_clients)
-
                     for c in clients:
                         c.send_msg(data)
-
             except:
-                if data["symetric_key"]:
-                    self.key=data["symetric_key"]
+                pass
+
+            try:
+                if data["chanel"]:
+                    ch = [ch for ch in chanel.chanel_list if str(ch.chanel_id) == data["chanel"]]
+                    self.client_chanel = ch[0]
+                    self.client_chanel.users.append(self)
+            except:
+                pass
+
+            try:
+                if data["create_chanel"]:
+                    print(data)
+                    ch=chanel.Chanel()
+                    self.client_chanel = ch
+                    chanel.chanel_list.append(ch)
+                    self.client_chanel.users.append(self)
+                    data_to_send = json.dumps({"chanel_id": str(self.client_chanel.chanel_id)})
+                    self.client_conn.sendall(data_to_send.encode())
+            except:
+                pass
 
         self.client_conn.close()
 
-    def find_same_key_clients(self):
-        return [ac for ac in active_clients if ac.key == self.key]
-
-    def send_msg(self,data):
-        print("Sending to " +str(self.key))
+    def send_msg(self, data):
         self.client_conn.sendall(data.encode())
+        print("sending")
