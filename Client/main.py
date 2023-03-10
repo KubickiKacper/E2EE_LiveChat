@@ -1,50 +1,58 @@
-import socket
-import json
-import threading
-import time
+import msvcrt
+import os
+import chat
 
-HOST = "127.0.0.1"
-PORT = 65432
-key=None
-nickname=None
-connected_flag=False
+def cls():
+    os.system('cls' if os.name=='nt' else 'clear')
 
-def initial_connection(client_socket):
-    global  connected_flag,key
-    data=json.dumps({"symetric_key": key})
-    client_socket.send(data.encode())
-    connected_flag = not connected_flag
+class Menu():
+    def __init__(self):
+        self.options={
+            1: "Join room",
+            2: "Create rooom",
+            3: "Generate encrpytion key",
+            4: "Exit"
+        }
 
-def sender(client_socket):
-    print("\n\nYour message: ")
-    while True:
-        text=input()
-        data = json.dumps({"text": text, "nickname": nickname})
-        client_socket.send(data.encode())
-        print('\x1b[1A\x1b[2K\x1b[1A')
-        time.sleep(0.1)
+        self.options_functions = [
+            self.join_room,
+            self.create_room,
+            self.generate_key,
+            self.menu_exit
+        ]
 
+    def join_room(self):
+        cls()
+        chanel=input("Chanel: ")
+        nickname=input("Enter your nickname: ")
+        chat.run(nickname, input_chanel=chanel)
 
-def run():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        if not connected_flag:
-            initial_connection(s)
+    def create_room(self):
+        cls()
+        print("Create room")
+        nickname = input("Enter your nickname: ")
+        chat.run(nickname, create_chanel_flag=True)
 
-        threading.Thread(target=sender, args=(s,)).start()
+    def generate_key(self):
+        cls()
+        print("Generate encryption key")
 
+    def menu_exit(self):
+        cls()
+        exit()
+
+    def main_menu(self):
         while True:
-            data_received = s.recv(1024)
-            if not data_received:
-                break
-            data_received = json.loads(data_received)
+            cls()
+            for key in self.options.keys():
+                print(f'{key}. {self.options[key]}')
 
-            print("\033[A                             \033[A")
-            print("\033[A                             \033[A")
-            print(f"{data_received['nickname']}: {data_received['text']}")
-            print("\nYour message: ")
+            option=int(msvcrt.getch())
+            print(option)
+
+            if option in self.options.keys():
+                self.options_functions[option-1]()
 
 if __name__ == '__main__':
-    key=input("Public key: ")
-    nickname=input("Enter your nickname: ")
-    run()
+    m=Menu()
+    m.main_menu()
