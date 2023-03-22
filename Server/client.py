@@ -1,6 +1,6 @@
 import threading
 import json
-import chanel
+import channel
 
 
 class Client(threading.Thread):
@@ -8,7 +8,7 @@ class Client(threading.Thread):
         super(Client, self).__init__()
         self.client_conn=client_conn
         self.client_addr=client_addr
-        self.client_chanel=None
+        self.client_channel=None
 
     def run(self):
         while True:
@@ -20,7 +20,7 @@ class Client(threading.Thread):
             try:
                 if data["text"]:
                     print(data)
-                    clients = self.client_chanel.users
+                    clients = self.client_channel.users
                     data=json.dumps(data)
                     for c in clients:
                         c.send_msg(data)
@@ -28,21 +28,21 @@ class Client(threading.Thread):
                 pass
 
             try:
-                if data["chanel"]:
-                    ch = [ch for ch in chanel.chanel_list if str(ch.chanel_id) == data["chanel"]]
-                    self.client_chanel = ch[0]
-                    self.client_chanel.users.append(self)
+                if data["channel"]:
+                    ch = [ch for ch in channel.channel_list if str(ch.channel_id) == data["channel"]]
+                    self.client_channel = ch[0]
+                    self.client_channel.users.append(self)
             except:
                 pass
 
             try:
-                if data["create_chanel"]:
+                if data["create_channel"]:
                     print(data)
-                    ch=chanel.Chanel()
-                    self.client_chanel = ch
-                    chanel.chanel_list.append(ch)
-                    self.client_chanel.users.append(self)
-                    data_to_send = json.dumps({"chanel_id": str(self.client_chanel.chanel_id)})
+                    ch=channel.Channel()
+                    self.client_channel = ch
+                    channel.channel_list.append(ch)
+                    self.client_channel.users.append(self)
+                    data_to_send = json.dumps({"channel_id": str(self.client_channel.channel_id)})
                     self.client_conn.sendall(data_to_send.encode())
             except:
                 pass
