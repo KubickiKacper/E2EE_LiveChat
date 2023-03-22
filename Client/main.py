@@ -1,6 +1,7 @@
 import msvcrt
 import os
 import chat
+from cryptography.fernet import Fernet
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
@@ -23,19 +24,25 @@ class Menu():
 
     def join_room(self):
         cls()
-        chanel=input("Chanel: ")
+        channel=input("Channel: ")
         nickname=input("Enter your nickname: ")
-        chat.run(nickname, input_chanel=chanel)
+        crypto_key=input("Enter your symmetric key: ")
+        chat.run(nickname, crypto_key, input_channel=channel)
 
     def create_room(self):
         cls()
         print("Create room")
         nickname = input("Enter your nickname: ")
-        chat.run(nickname, create_chanel_flag=True)
+        crypto_key = input("Enter your symmetric key: ")
+        chat.run(nickname, crypto_key, create_channel_flag=True)
 
     def generate_key(self):
         cls()
-        print("Generate encryption key")
+        key = Fernet.generate_key()
+        print("This is your symmetric key. Keep it in a safe place.")
+        print(key.decode())
+        print("\nUse enter to return to menu")
+        input()
 
     def menu_exit(self):
         cls()
